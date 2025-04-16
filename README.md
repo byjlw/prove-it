@@ -30,9 +30,6 @@ ProveIt can be used to verify the creation date and ownership of various types o
 
 ## Getting Started
 
-### Web Interface
-
-Visit [https://proveit.example.com](https://proveit.example.com) to use the web interface.
 
 ### Python Package
 
