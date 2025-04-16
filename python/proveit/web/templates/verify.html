@@ -1,0 +1,536 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Intellectual Property - ProveIt{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <h2 class="mb-4">Verify Intellectual Property</h2>
+        
+        <div class="alert alert-info">
+            <p class="mb-0"><strong>Privacy Note:</strong> Your file stays on your device. Only the hash is sent to the blockchain for verification.</p>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Step 1: Upload File or Enter Hash</h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="verifyTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-tab-pane" type="button" role="tab" aria-controls="file-tab-pane" aria-selected="true">Upload File</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="hash-tab" data-bs-toggle="tab" data-bs-target="#hash-tab-pane" type="button" role="tab" aria-controls="hash-tab-pane" aria-selected="false">Enter Hash</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content mt-3" id="verifyTabsContent">
+                    <div class="tab-pane fade show active" id="file-tab-pane" role="tabpanel" aria-labelledby="file-tab" tabindex="0">
+                        <div id="dropArea" class="drop-area text-center p-5 mb-3">
+                            <i class="bi bi-cloud-upload display-1"></i>
+                            <h4>Drag & Drop File Here</h4>
+                            <p>or</p>
+                            <input type="file" id="fileInput" class="d-none">
+                            <button id="browseBtn" class="btn btn-primary">Browse Files</button>
+                            <p class="text-muted mt-2">Max file size: 100MB</p>
+                        </div>
+                        
+                        <div id="fileInfo" class="d-none">
+                            <div class="alert alert-success">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark me-3 fs-1"></i>
+                                    <div>
+                                        <h5 id="fileName">filename.pdf</h5>
+                                        <p id="fileSize" class="mb-0">Size: 1.2 MB</p>
+                                    </div>
+                                    <button id="removeFileBtn" class="btn btn-sm btn-outline-danger ms-auto">Remove</button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="fileHash" class="form-label">File Hash (SHA-256)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control font-monospace" id="fileHash" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" id="copyHashBtn">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="hashingProgress" class="progress d-none">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="hash-tab-pane" role="tabpanel" aria-labelledby="hash-tab" tabindex="0">
+                        <div class="mb-3">
+                            <label for="manualHashInput" class="form-label">Enter File Hash</label>
+                            <input type="text" class="form-control font-monospace" id="manualHashInput" placeholder="0x...">
+                            <div class="form-text">Enter the SHA-256 hash of the file you want to verify.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="mb-3">
+                    <label for="networkSelect" class="form-label">Network</label>
+                    <select class="form-select" id="networkSelect">
+                        <option value="polygon" selected>Polygon</option>
+                        <option value="goerli">Goerli (Testnet)</option>
+                        <option value="mainnet">Ethereum Mainnet</option>
+                    </select>
+                </div>
+                
+                <button id="verifyBtn" class="btn btn-primary">Verify on Blockchain</button>
+            </div>
+        </div>
+        
+        <div id="resultCard" class="d-none">
+            <div id="registeredCard" class="card mb-4 d-none">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Verification Successful!</h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">This file is registered on the blockchain.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Registration Details</label>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Hash
+                                <span id="resultHash" class="font-monospace"></span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Owner
+                                <span id="ownerAddress" class="font-monospace"></span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Registration Date
+                                <span id="timestamp"></span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Network
+                                <span id="networkName"></span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div id="metadataSection" class="mb-3 d-none">
+                        <label class="form-label">Metadata</label>
+                        <div class="card">
+                            <div class="card-body">
+                                <pre id="metadata" class="mb-0"></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button id="downloadCertBtn" class="btn btn-primary">Download Certificate</button>
+                        <a href="{{ url_for('proveit.register_page') }}" class="btn btn-outline-secondary">Register Another File</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="notRegisteredCard" class="card mb-4 d-none">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Not Registered</h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">This file is not registered on the blockchain.</p>
+                    <p>The hash of this file was not found on the selected network.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">File Hash</label>
+                        <input type="text" class="form-control font-monospace" id="notRegisteredHash" readonly>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('proveit.register_page') }}" class="btn btn-primary">Register This File</a>
+                        <button id="tryAnotherBtn" class="btn btn-outline-secondary">Try Another File</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+<style>
+    .drop-area {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        transition: all 0.3s;
+    }
+    .drop-area.highlight {
+        border-color: #0d6efd;
+        background-color: #e9ecef;
+    }
+    .font-monospace {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.875em;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // File upload elements
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileHash = document.getElementById('fileHash');
+        const removeFileBtn = document.getElementById('removeFileBtn');
+        const copyHashBtn = document.getElementById('copyHashBtn');
+        const hashingProgress = document.getElementById('hashingProgress');
+        const progressBar = hashingProgress.querySelector('.progress-bar');
+        
+        // Manual hash input
+        const manualHashInput = document.getElementById('manualHashInput');
+        
+        // Network selection
+        const networkSelect = document.getElementById('networkSelect');
+        
+        // Verify button
+        const verifyBtn = document.getElementById('verifyBtn');
+        
+        // Result cards
+        const resultCard = document.getElementById('resultCard');
+        const registeredCard = document.getElementById('registeredCard');
+        const notRegisteredCard = document.getElementById('notRegisteredCard');
+        
+        // Registered result elements
+        const resultHash = document.getElementById('resultHash');
+        const ownerAddress = document.getElementById('ownerAddress');
+        const timestamp = document.getElementById('timestamp');
+        const networkName = document.getElementById('networkName');
+        const metadataSection = document.getElementById('metadataSection');
+        const metadata = document.getElementById('metadata');
+        const downloadCertBtn = document.getElementById('downloadCertBtn');
+        
+        // Not registered result elements
+        const notRegisteredHash = document.getElementById('notRegisteredHash');
+        const tryAnotherBtn = document.getElementById('tryAnotherBtn');
+        
+        // State variables
+        let currentFile = null;
+        let currentHash = null;
+        let activeTab = 'file';
+        
+        // Tab switching
+        document.getElementById('file-tab').addEventListener('click', function() {
+            activeTab = 'file';
+            updateVerifyButtonState();
+        });
+        
+        document.getElementById('hash-tab').addEventListener('click', function() {
+            activeTab = 'hash';
+            updateVerifyButtonState();
+        });
+        
+        // Update verify button state
+        function updateVerifyButtonState() {
+            if (activeTab === 'file') {
+                verifyBtn.disabled = !currentHash;
+            } else {
+                verifyBtn.disabled = !manualHashInput.value.trim();
+            }
+        }
+        
+        // File drag & drop handling
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.classList.add('highlight');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('highlight');
+        }
+        
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+        
+        browseBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                handleFile(fileInput.files[0]);
+            }
+        });
+        
+        removeFileBtn.addEventListener('click', function() {
+            resetFileUpload();
+        });
+        
+        function resetFileUpload() {
+            currentFile = null;
+            currentHash = null;
+            fileInput.value = '';
+            fileInfo.classList.add('d-none');
+            dropArea.classList.remove('d-none');
+            updateVerifyButtonState();
+        }
+        
+        function handleFile(file) {
+            // Check file size (max 100MB)
+            if (file.size > 100 * 1024 * 1024) {
+                alert('File is too large. Maximum size is 100MB.');
+                return;
+            }
+            
+            currentFile = file;
+            
+            // Display file info
+            fileName.textContent = file.name;
+            fileSize.textContent = 'Size: ' + formatFileSize(file.size);
+            
+            // Show hashing progress
+            dropArea.classList.add('d-none');
+            hashingProgress.classList.remove('d-none');
+            
+            // Simulate progress (actual hashing happens on the server)
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += 5;
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    hashFile(file);
+                }
+            }, 100);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            else return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+        }
+        
+        function hashFile(file) {
+            // Create FormData
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Send file to server for hashing
+            fetch('/api/hash', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    resetFileUpload();
+                    return;
+                }
+                
+                // Display hash
+                currentHash = data.hash;
+                fileHash.value = data.hash;
+                
+                // Show file info
+                hashingProgress.classList.add('d-none');
+                fileInfo.classList.remove('d-none');
+                
+                // Enable verify button
+                updateVerifyButtonState();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error hashing file. Please try again.');
+                resetFileUpload();
+            });
+        }
+        
+        // Copy hash to clipboard
+        copyHashBtn.addEventListener('click', function() {
+            navigator.clipboard.writeText(fileHash.value)
+                .then(() => {
+                    const originalText = copyHashBtn.innerHTML;
+                    copyHashBtn.innerHTML = '<i class="bi bi-check"></i>';
+                    setTimeout(() => {
+                        copyHashBtn.innerHTML = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+        });
+        
+        // Manual hash input
+        manualHashInput.addEventListener('input', function() {
+            updateVerifyButtonState();
+        });
+        
+        // Verify button
+        verifyBtn.addEventListener('click', function() {
+            let hashToVerify;
+            
+            if (activeTab === 'file') {
+                if (!currentHash) {
+                    alert('Please upload a file first.');
+                    return;
+                }
+                hashToVerify = currentHash;
+            } else {
+                const inputHash = manualHashInput.value.trim();
+                if (!inputHash) {
+                    alert('Please enter a hash to verify.');
+                    return;
+                }
+                hashToVerify = inputHash;
+                
+                // Add 0x prefix if missing
+                if (!hashToVerify.startsWith('0x')) {
+                    hashToVerify = '0x' + hashToVerify;
+                }
+            }
+            
+            // Disable verify button and show loading
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Verifying...';
+            
+            // Prepare data
+            const data = {
+                hash: hashToVerify,
+                network: networkSelect.value
+            };
+            
+            // Send verification request
+            fetch('/api/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset verify button
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = 'Verify on Blockchain';
+                
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                // Show result
+                resultCard.classList.remove('d-none');
+                
+                if (data.is_registered) {
+                    // Show registered card
+                    registeredCard.classList.remove('d-none');
+                    notRegisteredCard.classList.add('d-none');
+                    
+                    // Fill in details
+                    resultHash.textContent = data.hash;
+                    ownerAddress.textContent = data.owner;
+                    timestamp.textContent = new Date(data.timestamp).toLocaleString();
+                    networkName.textContent = data.network;
+                    
+                    // Show metadata if available
+                    if (data.metadata) {
+                        metadata.textContent = data.metadata;
+                        metadataSection.classList.remove('d-none');
+                    } else {
+                        metadataSection.classList.add('d-none');
+                    }
+                    
+                    // Set up download certificate button
+                    downloadCertBtn.onclick = function() {
+                        const certData = {
+                            hash: data.hash,
+                            network: data.network,
+                            filename: currentFile ? currentFile.name : null,
+                            format: 'pdf'
+                        };
+                        
+                        // Create form for POST request
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/api/certificate';
+                        form.target = '_blank';
+                        
+                        // Add hidden fields
+                        for (const key in certData) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = certData[key];
+                            form.appendChild(input);
+                        }
+                        
+                        // Submit form
+                        document.body.appendChild(form);
+                        form.submit();
+                        document.body.removeChild(form);
+                    };
+                } else {
+                    // Show not registered card
+                    registeredCard.classList.add('d-none');
+                    notRegisteredCard.classList.remove('d-none');
+                    
+                    // Fill in details
+                    notRegisteredHash.value = data.hash;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error verifying on blockchain. Please try again.');
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = 'Verify on Blockchain';
+            });
+        });
+        
+        // Try another button
+        tryAnotherBtn.addEventListener('click', function() {
+            // Reset everything
+            resetFileUpload();
+            manualHashInput.value = '';
+            resultCard.classList.add('d-none');
+            registeredCard.classList.add('d-none');
+            notRegisteredCard.classList.add('d-none');
+            
+            // Switch to file tab
+            document.getElementById('file-tab').click();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ProveIt - Blockchain Intellectual Property Verification{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.1/dist/web3.min.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('proveit.index') }}">ProveIt</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'proveit.index' %}active{% endif %}" href="{{ url_for('proveit.index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'proveit.register_page' %}active{% endif %}" href="{{ url_for('proveit.register_page') }}">Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'proveit.verify_page' %}active{% endif %}" href="{{ url_for('proveit.verify_page') }}">Verify</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <button id="connectWalletBtn" class="btn btn-outline-light">Connect Wallet</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer mt-5 py-3 bg-light">
+        <div class="container text-center">
+            <span class="text-muted">ProveIt - Blockchain Intellectual Property Verification</span>
+            <p class="text-muted small mt-2">
+                This tool provides blockchain-based verification of file existence at a specific time. 
+                Registration does not constitute copyright registration or legal protection.
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Wallet connection logic
+        document.getElementById('connectWalletBtn').addEventListener('click', async function() {
+            if (window.ethereum) {
+                try {
+                    // Request account access
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const account = accounts[0];
+                    
+                    // Update button text
+                    this.textContent = account.substring(0, 6) + '...' + account.substring(38);
+                    this.classList.remove('btn-outline-light');
+                    this.classList.add('btn-success');
+                    
+                    // Store the account in localStorage
+                    localStorage.setItem('connectedAccount', account);
+                    
+                    // Dispatch an event to notify other components
+                    window.dispatchEvent(new CustomEvent('walletConnected', { detail: { account } }));
+                } catch (error) {
+                    console.error('Error connecting to wallet:', error);
+                    alert('Error connecting to wallet: ' + error.message);
+                }
+            } else {
+                alert('No Ethereum wallet detected. Please install MetaMask or another Ethereum wallet.');
+            }
+        });
+        
+        // Check if wallet was previously connected
+        window.addEventListener('DOMContentLoaded', function() {
+            const connectedAccount = localStorage.getItem('connectedAccount');
+            if (connectedAccount) {
+                const connectWalletBtn = document.getElementById('connectWalletBtn');
+                connectWalletBtn.textContent = connectedAccount.substring(0, 6) + '...' + connectedAccount.substring(38);
+                connectWalletBtn.classList.remove('btn-outline-light');
+                connectWalletBtn.classList.add('btn-success');
+                
+                // Dispatch an event to notify other components
+                window.dispatchEvent(new CustomEvent('walletConnected', { detail: { account: connectedAccount } }));
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,461 @@
+{% extends 'base.html' %}
+
+{% block title %}Register Intellectual Property - ProveIt{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <h2 class="mb-4">Register Intellectual Property</h2>
+        
+        <div class="alert alert-info">
+            <p class="mb-0"><strong>Privacy Note:</strong> Your file stays on your device. Only the hash is sent to the blockchain.</p>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Step 1: Upload Your File</h5>
+            </div>
+            <div class="card-body">
+                <div id="dropArea" class="drop-area text-center p-5 mb-3">
+                    <i class="bi bi-cloud-upload display-1"></i>
+                    <h4>Drag & Drop File Here</h4>
+                    <p>or</p>
+                    <input type="file" id="fileInput" class="d-none">
+                    <button id="browseBtn" class="btn btn-primary">Browse Files</button>
+                    <p class="text-muted mt-2">Max file size: 100MB</p>
+                </div>
+                
+                <div id="fileInfo" class="d-none">
+                    <div class="alert alert-success">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark me-3 fs-1"></i>
+                            <div>
+                                <h5 id="fileName">filename.pdf</h5>
+                                <p id="fileSize" class="mb-0">Size: 1.2 MB</p>
+                            </div>
+                            <button id="removeFileBtn" class="btn btn-sm btn-outline-danger ms-auto">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="fileHash" class="form-label">File Hash (SHA-256)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control font-monospace" id="fileHash" readonly>
+                            <button class="btn btn-outline-secondary" type="button" id="copyHashBtn">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">This is the unique identifier of your file that will be stored on the blockchain.</div>
+                    </div>
+                </div>
+                
+                <div id="hashingProgress" class="progress d-none">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="step2Card" class="card mb-4 d-none">
+            <div class="card-header">
+                <h5 class="mb-0">Step 2: Add Metadata (Optional)</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="metadataInput" class="form-label">Metadata</label>
+                    <textarea class="form-control" id="metadataInput" rows="3" placeholder="Title: My Thesis, Author: John Doe, Date: April 15, 2025"></textarea>
+                    <div class="form-text">Add any additional information about your file that you want to store on the blockchain.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="step3Card" class="card mb-4 d-none">
+            <div class="card-header">
+                <h5 class="mb-0">Step 3: Register on Blockchain</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="networkSelect" class="form-label">Network</label>
+                    <select class="form-select" id="networkSelect">
+                        <option value="polygon" selected>Polygon (Recommended)</option>
+                        <option value="goerli">Goerli (Testnet)</option>
+                        <option value="mainnet">Ethereum Mainnet</option>
+                    </select>
+                    <div class="form-text">Polygon is recommended for lower gas fees.</div>
+                </div>
+                
+                <div class="alert alert-warning" id="walletAlert">
+                    <p class="mb-0"><strong>Connect Wallet:</strong> Please connect your Ethereum wallet to continue.</p>
+                </div>
+                
+                <div id="gasEstimate" class="alert alert-secondary d-none">
+                    <p class="mb-0"><strong>Estimated Gas Fee:</strong> <span id="gasFeeAmount">0.001 MATIC</span></p>
+                </div>
+                
+                <button id="registerBtn" class="btn btn-primary" disabled>Register on Blockchain</button>
+            </div>
+        </div>
+        
+        <div id="resultCard" class="card mb-4 d-none">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Registration Successful!</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Transaction Hash</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control font-monospace" id="txHash" readonly>
+                        <button class="btn btn-outline-secondary" type="button" id="copyTxBtn">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Registration Details</label>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Owner
+                            <span id="ownerAddress" class="font-monospace"></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Timestamp
+                            <span id="timestamp"></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Network
+                            <span id="networkName"></span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button id="downloadCertBtn" class="btn btn-primary">Download Certificate</button>
+                    <a href="{{ url_for('proveit.verify_page') }}" class="btn btn-outline-secondary">Verify Another File</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+<style>
+    .drop-area {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        transition: all 0.3s;
+    }
+    .drop-area.highlight {
+        border-color: #0d6efd;
+        background-color: #e9ecef;
+    }
+    .font-monospace {
+        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.875em;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileHash = document.getElementById('fileHash');
+        const removeFileBtn = document.getElementById('removeFileBtn');
+        const copyHashBtn = document.getElementById('copyHashBtn');
+        const hashingProgress = document.getElementById('hashingProgress');
+        const progressBar = hashingProgress.querySelector('.progress-bar');
+        const step2Card = document.getElementById('step2Card');
+        const step3Card = document.getElementById('step3Card');
+        const metadataInput = document.getElementById('metadataInput');
+        const networkSelect = document.getElementById('networkSelect');
+        const walletAlert = document.getElementById('walletAlert');
+        const gasEstimate = document.getElementById('gasEstimate');
+        const registerBtn = document.getElementById('registerBtn');
+        const resultCard = document.getElementById('resultCard');
+        const txHash = document.getElementById('txHash');
+        const copyTxBtn = document.getElementById('copyTxBtn');
+        const ownerAddress = document.getElementById('ownerAddress');
+        const timestamp = document.getElementById('timestamp');
+        const networkName = document.getElementById('networkName');
+        const downloadCertBtn = document.getElementById('downloadCertBtn');
+        
+        let currentFile = null;
+        let currentHash = null;
+        let connectedAccount = null;
+        
+        // Check if wallet is connected
+        window.addEventListener('walletConnected', function(e) {
+            connectedAccount = e.detail.account;
+            walletAlert.classList.add('d-none');
+            gasEstimate.classList.remove('d-none');
+            registerBtn.disabled = !currentHash;
+        });
+        
+        if (localStorage.getItem('connectedAccount')) {
+            connectedAccount = localStorage.getItem('connectedAccount');
+            walletAlert.classList.add('d-none');
+            gasEstimate.classList.remove('d-none');
+            registerBtn.disabled = !currentHash;
+        }
+        
+        // File drag & drop handling
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.classList.add('highlight');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('highlight');
+        }
+        
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+        
+        browseBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                handleFile(fileInput.files[0]);
+            }
+        });
+        
+        removeFileBtn.addEventListener('click', function() {
+            resetFileUpload();
+        });
+        
+        function resetFileUpload() {
+            currentFile = null;
+            currentHash = null;
+            fileInput.value = '';
+            fileInfo.classList.add('d-none');
+            dropArea.classList.remove('d-none');
+            step2Card.classList.add('d-none');
+            step3Card.classList.add('d-none');
+            registerBtn.disabled = true;
+        }
+        
+        function handleFile(file) {
+            // Check file size (max 100MB)
+            if (file.size > 100 * 1024 * 1024) {
+                alert('File is too large. Maximum size is 100MB.');
+                return;
+            }
+            
+            currentFile = file;
+            
+            // Display file info
+            fileName.textContent = file.name;
+            fileSize.textContent = 'Size: ' + formatFileSize(file.size);
+            
+            // Show hashing progress
+            dropArea.classList.add('d-none');
+            hashingProgress.classList.remove('d-none');
+            
+            // Simulate progress (actual hashing happens on the server)
+            let progress = 0;
+            const interval = setInterval(function() {
+                progress += 5;
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    hashFile(file);
+                }
+            }, 100);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            else return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+        }
+        
+        function hashFile(file) {
+            // Create FormData
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Send file to server for hashing
+            fetch('/api/hash', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    resetFileUpload();
+                    return;
+                }
+                
+                // Display hash
+                currentHash = data.hash;
+                fileHash.value = data.hash;
+                
+                // Show file info and next steps
+                hashingProgress.classList.add('d-none');
+                fileInfo.classList.remove('d-none');
+                step2Card.classList.remove('d-none');
+                step3Card.classList.remove('d-none');
+                
+                // Enable register button if wallet is connected
+                registerBtn.disabled = !connectedAccount;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error hashing file. Please try again.');
+                resetFileUpload();
+            });
+        }
+        
+        // Copy hash to clipboard
+        copyHashBtn.addEventListener('click', function() {
+            navigator.clipboard.writeText(fileHash.value)
+                .then(() => {
+                    const originalText = copyHashBtn.innerHTML;
+                    copyHashBtn.innerHTML = '<i class="bi bi-check"></i>';
+                    setTimeout(() => {
+                        copyHashBtn.innerHTML = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+        });
+        
+        // Register on blockchain
+        registerBtn.addEventListener('click', function() {
+            if (!currentHash || !connectedAccount) {
+                return;
+            }
+            
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Registering...';
+            
+            // Prepare data
+            const data = {
+                hash: currentHash,
+                metadata: metadataInput.value,
+                network: networkSelect.value
+            };
+            
+            // Send registration request
+            fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    registerBtn.disabled = false;
+                    registerBtn.innerHTML = 'Register on Blockchain';
+                    return;
+                }
+                
+                // Display result
+                txHash.value = data.tx_hash;
+                ownerAddress.textContent = data.owner;
+                timestamp.textContent = new Date(data.timestamp).toLocaleString();
+                networkName.textContent = data.network;
+                
+                // Show result card
+                step2Card.classList.add('d-none');
+                step3Card.classList.add('d-none');
+                resultCard.classList.remove('d-none');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error registering on blockchain. Please try again.');
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = 'Register on Blockchain';
+            });
+        });
+        
+        // Copy transaction hash to clipboard
+        copyTxBtn.addEventListener('click', function() {
+            navigator.clipboard.writeText(txHash.value)
+                .then(() => {
+                    const originalText = copyTxBtn.innerHTML;
+                    copyTxBtn.innerHTML = '<i class="bi bi-check"></i>';
+                    setTimeout(() => {
+                        copyTxBtn.innerHTML = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+        });
+        
+        // Download certificate
+        downloadCertBtn.addEventListener('click', function() {
+            if (!currentHash) return;
+            
+            const data = {
+                hash: currentHash,
+                network: networkSelect.value,
+                filename: currentFile ? currentFile.name : null,
+                format: 'pdf'
+            };
+            
+            // Create form for POST request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/api/certificate';
+            form.target = '_blank';
+            
+            // Add hidden fields
+            for (const key in data) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = data[key];
+                form.appendChild(input);
+            }
+            
+            // Submit form
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        });
+    });
+</script>
+{% endblock %}

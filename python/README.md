@@ -2,44 +2,27 @@
 
 A blockchain-based intellectual property verification system that makes it easy to establish who created a document, image, or other intellectual property first.
 
-## Overview
+## Installation
 
-ProveIt allows users to:
-
-1. **Register Intellectual Property**: Hash a file and store the hash on the Ethereum blockchain
-2. **Verify Intellectual Property**: Check if a file has been previously registered and by whom
-3. **Generate Certificates**: Create verifiable proof of registration
+```bash
+pip install proveit
+```
 
 ## Features
 
-- **Multiple Interfaces**: Web, CLI, and Python library
+- **Register Intellectual Property**: Hash a file and store the hash on the Ethereum blockchain
+- **Verify Intellectual Property**: Check if a file has been previously registered and by whom
+- **Generate Certificates**: Create verifiable proof of registration
+- **Multiple Interfaces**: CLI, Python library, and local web server
 - **Blockchain Verification**: Immutable proof of existence on Ethereum
 - **Privacy-Focused**: Files are hashed locally; only the hash is stored on-chain
 - **Wallet Support**: Compatible with MetaMask, Rabby, and WalletConnect
-- **Simple & Efficient**: Optimized for low gas costs and ease of use
 
-## Use Cases
+## Quick Start
 
-ProveIt can be used to verify the creation date and ownership of various types of intellectual property, such as:
-
-- **Academic Work**: Thesis papers (PDF), research data (CSV, XLSX)
-- **Creative Content**: Artwork (PNG, JPG), music compositions (MP3, WAV)
-- **Technical Designs**: Engineering drawings (DWG, PNG), architectural plans (PDF)
-- **Literary Works**: Manuscripts (DOCX, PDF), screenplays (PDF)
-- **Software**: Source code (various formats), compiled applications (EXE, APP)
-
-## Getting Started
-
-### Web Interface
-
-Visit [https://proveit.example.com](https://proveit.example.com) to use the web interface.
-
-### Python Package
+### Command Line Interface
 
 ```bash
-# Install the package
-pip install proveit
-
 # Register a file
 proveit register path/to/thesis.pdf
 
@@ -73,9 +56,17 @@ else:
 
 ## Documentation
 
-- [Design Documentation](docs/DESIGN.md)
-- [Usage Guide](docs/USAGE.md)
-- [Smart Contract](contracts/README.md)
+For detailed usage instructions, see the [full documentation](https://github.com/example/proveit/docs/USAGE.md).
+
+## Use Cases
+
+ProveIt can be used to verify the creation date and ownership of various types of intellectual property, such as:
+
+- **Academic Work**: Thesis papers (PDF), research data (CSV, XLSX)
+- **Creative Content**: Artwork (PNG, JPG), music compositions (MP3, WAV)
+- **Technical Designs**: Engineering drawings (DWG, PNG), architectural plans (PDF)
+- **Literary Works**: Manuscripts (DOCX, PDF), screenplays (PDF)
+- **Software**: Source code (various formats), compiled applications (EXE, APP)
 
 ## Legal Disclaimer
 

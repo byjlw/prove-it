@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}ProveIt - Blockchain Intellectual Property Verification{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="jumbotron text-center">
+            <h1 class="display-4">ProveIt</h1>
+            <p class="lead">A blockchain-based intellectual property verification system</p>
+            <hr class="my-4">
+            <p>Establish who created a document, image, or other intellectual property first by registering it on the blockchain.</p>
+            <div class="d-flex justify-content-center mt-4">
+                <a href="{{ url_for('proveit.register_page') }}" class="btn btn-primary btn-lg mx-2">Register IP</a>
+                <a href="{{ url_for('proveit.verify_page') }}" class="btn btn-secondary btn-lg mx-2">Verify IP</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Register Intellectual Property</h5>
+                <p class="card-text">Hash your file and store the hash on the Ethereum blockchain to establish proof of existence at a specific time.</p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Privacy-focused: Files never leave your device</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Immutable blockchain record</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Optional metadata support</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('proveit.register_page') }}" class="btn btn-primary">Register Now</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Verify Intellectual Property</h5>
+                <p class="card-text">Check if a file has been previously registered and by whom. Verify the timestamp of registration.</p>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Quick verification process</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> See registration details</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Generate verification certificates</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('proveit.verify_page') }}" class="btn btn-secondary">Verify Now</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">How It Works</h5>
+                <p class="card-text">ProveIt uses blockchain technology to create an immutable record of your intellectual property.</p>
+                <ol>
+                    <li>Upload your file (it stays on your device)</li>
+                    <li>We calculate a unique hash of the file</li>
+                    <li>The hash is stored on the blockchain</li>
+                    <li>You receive a certificate of registration</li>
+                </ol>
+            </div>
+            <div class="card-footer">
+                <a href="https://github.com/example/proveit" class="btn btn-outline-dark">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Use Cases</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Academic Work</h6>
+                        <p>Thesis papers (PDF), research data (CSV, XLSX)</p>
+                        
+                        <h6>Creative Content</h6>
+                        <p>Artwork (PNG, JPG), music compositions (MP3, WAV)</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Technical Designs</h6>
+                        <p>Engineering drawings (DWG, PNG), architectural plans (PDF)</p>
+                        
+                        <h6>Literary Works</h6>
+                        <p>Manuscripts (DOCX, PDF), screenplays (PDF)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-12">
+        <div class="alert alert-info">
+            <h5>Legal Disclaimer</h5>
+            <p class="mb-0">This tool provides blockchain-based verification of file existence at a specific time. Registration through ProveIt does not constitute copyright registration or legal protection. It simply provides evidence that you possessed the file at the time of registration.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+<style>
+    .jumbotron {
+        padding: 2rem 1rem;
+        margin-bottom: 2rem;
+        background-color: #e9ecef;
+        border-radius: 0.3rem;
+    }
+</style>
+{% endblock %}
