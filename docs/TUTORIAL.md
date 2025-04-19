@@ -129,23 +129,34 @@ Rabby has several advantages over other wallets:
 
 To register files on the blockchain, you'll need a small amount of cryptocurrency to pay for the transaction fees (called "gas fees").
 
-For beginners, we recommend using the Polygon network instead of Ethereum, as the fees are much lower (often less than $0.01 per transaction).
+### Choosing a Network: Ethereum or Polygon
 
-### Getting Polygon (MATIC)
+ProveIt works on both the Ethereum mainnet and Polygon network. Here's a simple comparison to help you choose:
 
-1. **Option 1: Buy through an exchange**:
+| Network | Pros | Cons | Recommended For |
+|---------|------|------|-----------------|
+| **Ethereum Mainnet** | - Most secure<br>- Most widely recognized | - Higher fees ($5-50 per transaction)<br>- Slower confirmations | - High-value intellectual property<br>- Users who prioritize security above cost |
+| **Polygon** | - Very low fees ($0.01 per transaction)<br>- Fast confirmations | - Slightly less decentralized | - Beginners<br>- Testing and learning<br>- Most everyday use cases |
+
+**For beginners, we recommend starting with Polygon** to learn how everything works without spending a lot on transaction fees. You can always use Ethereum mainnet later for particularly valuable intellectual property.
+
+### Option 1: Getting Started with Polygon (Recommended for Beginners)
+
+#### Getting Polygon (MATIC)
+
+1. **Buy through an exchange**:
    - Create an account on an exchange like [Coinbase](https://www.coinbase.com/), [Binance](https://www.binance.com/), or [Kraken](https://www.kraken.com/)
    - Complete their identity verification process
    - Buy some MATIC (about $5-10 worth is plenty for many transactions)
    - Withdraw the MATIC to your Rabby wallet address
 
-2. **Option 2: Use a faucet for testnet tokens** (for practice only):
+2. **Use a faucet for testnet tokens** (for practice only):
    - If you just want to try things out without real money, you can use the Polygon Mumbai testnet
    - Go to [faucet.polygon.technology](https://faucet.polygon.technology/)
    - Enter your Rabby address
    - Receive free test MATIC (these have no real value but work for testing)
 
-### Configuring Rabby for Polygon
+#### Configuring Rabby for Polygon
 
 1. Open Rabby
 2. Click on the network dropdown at the top (it probably says "Ethereum")
@@ -156,6 +167,32 @@ For beginners, we recommend using the Polygon network instead of Ethereum, as th
    - Chain ID: 137
    - Symbol: MATIC
    - Block Explorer: https://polygonscan.com
+
+### Option 2: Using Ethereum Mainnet
+
+If you prefer to use Ethereum mainnet for maximum security and recognition:
+
+#### Getting Ethereum (ETH)
+
+1. **Buy through an exchange**:
+   - Create an account on an exchange like [Coinbase](https://www.coinbase.com/), [Binance](https://www.binance.com/), or [Kraken](https://www.kraken.com/)
+   - Complete their identity verification process
+   - Buy some ETH (about $50-100 worth is recommended to cover multiple transactions)
+   - Withdraw the ETH to your Rabby wallet address
+
+2. **Use a faucet for testnet tokens** (for practice only):
+   - If you want to practice without real money, you can use the Goerli testnet
+   - Go to [goerlifaucet.com](https://goerlifaucet.com/)
+   - Enter your Rabby address
+   - Receive free test ETH (these have no real value but work for testing)
+
+#### Using Ethereum in Rabby
+
+1. Open Rabby
+2. Click on the network dropdown at the top
+3. Select "Ethereum" (this should be the default)
+
+**Note**: When using Ethereum mainnet, be prepared for higher transaction fees. Always check the gas fee before confirming a transaction, and consider using the network during off-peak hours for lower fees.
 
 ## Installing ProveIt
 
