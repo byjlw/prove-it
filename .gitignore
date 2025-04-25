@@ -74,6 +74,8 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+tests/integration-tests/assets/
+tests/integration_tests/assets/
 
 # Flask
 instance/
@@ -109,3 +111,6 @@ local.properties
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+.venv
+*test_venv

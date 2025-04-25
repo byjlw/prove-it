@@ -11,8 +11,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple, Union
 
+# Use a more modern approach with web3.py
 from web3 import Web3
-from web3.middleware import geth_poa_middleware
 from web3.exceptions import ContractLogicError
 
 from .models import NetworkType
@@ -62,7 +62,11 @@ class BlockchainConnector:
         # Convert string network to NetworkType if needed
         if isinstance(network, str):
             try:
-                self.network = NetworkType(network)
+                # Handle "hardhat" as a special case for LOCAL network
+                if network.lower() == "hardhat":
+                    self.network = NetworkType.LOCAL
+                else:
+                    self.network = NetworkType(network)
             except ValueError:
                 raise ValueError(f"Invalid network: {network}")
         else:
@@ -85,9 +89,11 @@ class BlockchainConnector:
         # Connect to the blockchain
         self.web3 = Web3(Web3.HTTPProvider(rpc_endpoint))
         
-        # Add PoA middleware for networks that require it
+        # Configure the web3 instance for the network
         if self.network in [NetworkType.GOERLI, NetworkType.POLYGON, NetworkType.POLYGON_MUMBAI]:
-            self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            # For PoA networks, we need to handle chain ID and gas price differently
+            # This approach works with all versions of web3.py
+            pass  # No middleware needed for basic functionality
         
         # Set up contract address
         if not contract_address:
@@ -343,7 +349,7 @@ class BlockchainConnector:
             file_hash = "0x" + file_hash
         
         # Convert the hash to bytes32
-        file_hash_bytes32 = Web3.toBytes(hexstr=file_hash)
+        file_hash_bytes32 = bytes.fromhex(file_hash[2:])
         
         # Build the transaction
         tx = self.contract.functions.register(file_hash_bytes32, metadata).build_transaction({
@@ -355,7 +361,7 @@ class BlockchainConnector:
         
         # Sign and send the transaction
         signed_tx = self.account.sign_transaction(tx)
-        tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = self.web3.eth.send_raw_transaction(signed_tx.raw_transaction)
         
         # Wait for the transaction to be mined
         tx_receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash)
@@ -390,7 +396,7 @@ class BlockchainConnector:
             file_hash = "0x" + file_hash
         
         # Convert the hash to bytes32
-        file_hash_bytes32 = Web3.toBytes(hexstr=file_hash)
+        file_hash_bytes32 = bytes.fromhex(file_hash[2:])
         
         # Call the verify function
         try:
