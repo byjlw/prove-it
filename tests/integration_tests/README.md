@@ -22,16 +22,56 @@ These assets are stored in the `assets` directory, which is excluded from versio
 
 ### Prerequisites
 
-Before running the tests, make sure you have the required dependencies installed:
+Before running the tests, make sure you have the required dependencies installed in a virtual environment:
 
 ```bash
+# Create and activate a virtual environment
+python -m venv test_venv
+source test_venv/bin/activate  # On Windows: test_venv\Scripts\activate
+
+# Install dependencies
 pip install -e .  # Install the ProveIt package
 pip install -r requirements-dev.txt  # Install development dependencies
 ```
 
+> **Note:** It's important to use a virtual environment to avoid conflicts with system-wide packages. The tests require specific versions of dependencies that might conflict with other packages.
+
+### Python Package Structure
+
+The tests directory is set up as a Python package to allow for proper imports between test modules. The following files are required:
+
+- `tests/__init__.py`: Makes the tests directory a Python package
+- `tests/integration_tests/__init__.py`: Makes the integration_tests directory a Python package
+
+These files should already exist in the repository. If you're getting import errors, make sure these files are present.
+
 ### Running with Hardhat (Local Blockchain)
 
-To run the tests with a local Hardhat node:
+To run the tests with a local Hardhat node, we provide setup and teardown scripts that handle the Hardhat node and contract deployment automatically:
+
+1. Run the setup script to start Hardhat and deploy the contract (if not already running):
+
+```bash
+./tests/integration_tests/setup.sh
+```
+
+2. Run the integration tests:
+
+```bash
+pytest -xvs tests/integration_tests/
+```
+
+3. (Optional) Run the teardown script to stop Hardhat (only if it was started by the setup script):
+
+```bash
+./tests/integration_tests/teardown.sh
+```
+
+The setup script checks if Hardhat is already running and if the contract is already deployed, so it's safe to run multiple times. The teardown script only stops Hardhat if it was started by the setup script.
+
+#### Manual Setup (Alternative)
+
+If you prefer to set up manually:
 
 1. Start a Hardhat node in a separate terminal:
 
@@ -94,10 +134,14 @@ To run the tests in a GitHub Actions workflow, add the following to your workflo
 ```yaml
 - name: Run integration tests
   run: |
-    npx hardhat node &
-    sleep 5
-    npx hardhat run scripts/deploy.js --network localhost
+    # Setup Hardhat and deploy contract
+    ./tests/integration_tests/setup.sh
+    
+    # Run tests
     pytest -xvs tests/integration_tests/
+    
+    # Teardown Hardhat
+    ./tests/integration_tests/teardown.sh
 ```
 
 ## Troubleshooting

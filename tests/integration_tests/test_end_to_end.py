@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 
 from proveit import ProveIt
 from proveit.models import NetworkType
-from proveit.hash import hash_file
+from proveit.hash import hash_file, hash_content
 
 # Import fixtures from conftest.py
 # pylint: disable=unused-import
@@ -64,6 +64,7 @@ class TestEndToEnd:
         2. Registers the test PDF on the blockchain
         3. Verifies the registration was successful
         4. Verifies the PDF can be verified
+        5. If the hash is already registered, creates a modified PDF in memory and registers that
         """
         # Skip if we're on a testnet and don't have funds
         if network != "hardhat":
@@ -82,7 +83,10 @@ class TestEndToEnd:
         
         # Try to register the test PDF
         registration_result = None
+        modified_registration_result = None
+        
         try:
+            # Try to register the original PDF
             registration_result = prover.register_file(test_pdf)
             
             # Verify the registration was successful
@@ -105,14 +109,44 @@ class TestEndToEnd:
                 assert registration_result.network == NetworkType.POLYGON
             elif network == "polygonMumbai":
                 assert registration_result.network == NetworkType.POLYGON_MUMBAI
-        except ValueError as e:
-            # If the hash is already registered, that's okay
+                
+        except Exception as e:
+            # If the hash is already registered, create a modified version
             if "Hash already registered" in str(e):
-                print("Hash already registered, skipping registration")
+                print("Hash already registered, creating modified PDF in memory...")
+                
+                # Read the original PDF
+                with open(test_pdf, 'rb') as f:
+                    original_content = f.read()
+                
+                # Create a modified version with a timestamp to ensure a different hash
+                import io
+                import random
+                modified_content = original_content + f"\n<!-- Modified: {datetime.now().isoformat()} Random: {random.randint(1, 1000000)} -->".encode('utf-8')
+                
+                # Register the modified content
+                modified_hash = hash_content(modified_content)
+                modified_registration_result = prover.register_content(modified_content)
+                
+                # Verify the modified registration was successful
+                assert modified_registration_result is not None
+                assert modified_registration_result.hash is not None
+                assert modified_registration_result.tx_hash is not None
+                assert modified_registration_result.owner == test_wallet["address"]
+                
+                # Verify the modified content
+                modified_verification_result = prover.verify_content(modified_content)
+                assert modified_verification_result.is_registered
+                assert modified_verification_result.hash == modified_registration_result.hash
+                assert modified_verification_result.owner == modified_registration_result.owner
+                assert modified_verification_result.timestamp == modified_registration_result.timestamp
+                
+                print(f"Successfully registered modified PDF with hash: {modified_registration_result.hash}")
             else:
+                # If it's a different error, raise it
                 raise
         
-        # Now verify the PDF
+        # Now verify the original PDF
         verification_result = prover.verify_file(test_pdf)
         
         # Verify the verification was successful
@@ -126,8 +160,7 @@ class TestEndToEnd:
             assert verification_result.timestamp == registration_result.timestamp
         else:
             # Otherwise, just verify that the hash matches the file
-            # The hash_file function already returns a hex string without the 0x prefix
-            assert verification_result.hash == "0x" + file_hash.replace("0x", "")
+            assert verification_result.hash == file_hash
 
     def test_certificate_generation(self, test_wallet, test_pdf, network, assets_dir):
         """
