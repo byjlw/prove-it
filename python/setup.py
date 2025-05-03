@@ -31,11 +31,6 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "web3>=6.0.0",
-        "parsimonious>=0.9.0",
-        "eth-abi>=5.0.0",
-        "eth-account>=0.13.0",
-        "eth-typing>=3.0.0",
-        "eth-utils>=2.0.0",
         "click>=8.0.0",
         "pycryptodome>=3.15.0",
         "reportlab>=3.6.0",
