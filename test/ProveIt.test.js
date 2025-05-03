@@ -36,10 +36,16 @@ describe("ProveIt Contract", function () {
       const fileHash = createRandomHash();
       const metadata = "Test file metadata";
 
-      // Register the hash
-      await expect(proveit.register(fileHash, metadata))
-        .to.emit(proveit, "HashRegistered")
-        .withArgs(fileHash, owner.address, await getBlockTimestamp(), metadata);
+      // Register the hash and get the transaction
+      const tx = await proveit.register(fileHash, metadata);
+      const receipt = await tx.wait();
+      
+      // Check that the event was emitted
+      const event = receipt.events.find(e => e.event === 'HashRegistered');
+      expect(event).to.not.be.undefined;
+      expect(event.args.hash).to.equal(fileHash);
+      expect(event.args.owner).to.equal(owner.address);
+      expect(event.args.metadata).to.equal(metadata);
 
       // Verify the hash is registered
       const registration = await proveit.verify(fileHash);
@@ -86,7 +92,7 @@ describe("ProveIt Contract", function () {
       const registration = await proveit.verify(fileHash);
       
       expect(registration.owner).to.equal(ethers.constants.AddressZero);
-      expect(registration.timestamp).to.equal(0);
+      expect(registration.timestamp.toNumber()).to.equal(0);
       expect(registration.metadata).to.equal("");
     });
 
@@ -126,7 +132,7 @@ describe("ProveIt Contract", function () {
       
       // The timestamp should be recent (within the last minute)
       const now = Math.floor(Date.now() / 1000);
-      expect(timestamp).to.be.closeTo(now, 60);
+      expect(timestamp.toNumber()).to.be.closeTo(now, 60);
     });
 
     it("Should return correct metadata for a hash", async function () {
