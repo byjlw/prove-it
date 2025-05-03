@@ -14,6 +14,8 @@
 **Dependencies**:
 
 * Limit the use of dependencies when possible.
+* Verify a dependency does not have a vulnerability before adding it
+* Try to use the latest version whenever possible
 
 **Separation of Concerns**:
 
