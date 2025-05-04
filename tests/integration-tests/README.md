@@ -25,8 +25,8 @@ These assets are stored in the `assets` directory, which is excluded from versio
 Before running the tests, make sure you have the required dependencies installed:
 
 ```bash
-pip install -e .  # Install the ProveIt package
-pip install -r requirements-dev.txt  # Install development dependencies
+pip install -r python/requirements-dev.txt  # Install development dependencies
+pip install -e python/  # Install the ProveIt package in development mode
 ```
 
 ### Running with Hardhat (Local Blockchain)

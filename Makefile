@@ -25,8 +25,8 @@ setup:
 
 install:
 	@echo "Installing dependencies..."
+	pip install -r python/requirements-dev.txt
 	pip install -e python/
-	pip install -r requirements-dev.txt
 	npm install
 
 test:
