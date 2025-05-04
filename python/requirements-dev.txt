@@ -19,5 +19,5 @@ sphinx-autodoc-typehints>=1.17.0
 # Type stubs
 types-requests>=2.27.0
 
-# Install the package in development mode
--e .
+# The package itself is installed separately
+# Do not use -e . here as it would try to install from the wrong directory

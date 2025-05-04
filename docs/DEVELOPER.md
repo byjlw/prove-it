@@ -37,8 +37,8 @@ This guide is intended for developers who want to contribute to the ProveIt proj
    npm install
    
    # Install Python dependencies
+   pip install -r python/requirements-dev.txt
    pip install -e python/
-   pip install -r requirements-dev.txt
    ```
 
 3. Set up environment variables:

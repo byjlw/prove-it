@@ -32,8 +32,8 @@ source venv/bin/activate
 
 # Install Python dependencies
 echo "Installing Python dependencies..."
+pip install -r python/requirements-dev.txt
 pip install -e python/
-pip install -r requirements-dev.txt
 
 # Install Node.js dependencies
 echo "Installing Node.js dependencies..."

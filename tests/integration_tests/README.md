@@ -30,8 +30,8 @@ python -m venv test_venv
 source test_venv/bin/activate  # On Windows: test_venv\Scripts\activate
 
 # Install dependencies
-pip install -e .  # Install the ProveIt package
-pip install -r requirements-dev.txt  # Install development dependencies
+pip install -r python/requirements-dev.txt  # Install development dependencies
+pip install -e python/  # Install the ProveIt package in development mode
 ```
 
 > **Note:** It's important to use a virtual environment to avoid conflicts with system-wide packages. The tests require specific versions of dependencies that might conflict with other packages.

@@ -34,8 +34,8 @@ jobs:
         python -m pip install --upgrade pip
         python -m venv test_venv
         source test_venv/bin/activate
-        pip install -e .
-        pip install -r requirements-dev.txt
+        pip install -r python/requirements-dev.txt
+        pip install -e python/
     
     - name: Setup for integration tests
       run: |
